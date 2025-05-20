@@ -1,53 +1,61 @@
 import tkinter as tk
-import os
 from tkinter import messagebox
+import os
 
 # Importa le funzioni di basso livello per l'inizializzazione del DB
 from functions.db_utils import create_tables, create_connection
 
 # Importa le funzioni di alto livello per la gestione dell'UI
-from functions.ui_add_product import create_add_product_frame # Funzione per creare la sezione "Aggiungi Prodotto"
-from functions.ui_view_product import show_products_list_window # Funzione per mostrare la lista prodotti
-from functions.stampa_utils import stampa_ddt # La tua funzione per stampare il DDT
+from functions.ui_common_utils import stampa_a_video # Se vuoi usare stampa_a_video nel main
+from functions.ui_add_product import open_add_product_window
+from functions.ui_view_product import open_view_products_window
+from functions.ui_edit_delete_product import open_edit_delete_product_window
+from functions.stampa_utils import stampa_ddt
 
-DATABASE_PATH = '../db/inventario.db'
+# --- Configurazione del Path per il Database ---
+DATABASE_DIR = 'db/' # Ora si aspetta 'db/' nella stessa directory di main.py
+DATABASE_PATH = os.path.join(DATABASE_DIR, 'inventario.db')
 
-#Funzione per stampare a video
-def stampa_a_video(testo):
-    messagebox.showinfo("Contenuto da Stampare", testo)
-
-#Funzione chiusura database
+# --- Funzione chiusura applicazione ---
 def chiudi_applicazione():
-    """Funzione per chiudere la connessione al database e poi la finestra."""
-    root.destroy() # Chiude la finestra principale
+    """Funzione per chiudere la finestra dell'applicazione."""
+    # La gestione della connessione è incapsulata in db_utils,
+    # quindi non c'è una 'conn' globale da chiudere qui direttamente.
+    root.destroy()
 
-#Intestazione App
+# --- Inizializzazione App Tkinter ---
 root = tk.Tk()
 root.title("Inventario Azienda Elettrica")
+root.geometry("400x300") # Dimensioni iniziali per la finestra del menu
 
 # --- Inizializzazione Database ---
-# Assicurati che la directory 'db' esista
-os.makedirs(os.path.dirname(DATABASE_PATH), exist_ok=True)
-create_tables() # Chiama la funzione per creare o verificare le tabelle del DB
+os.makedirs(DATABASE_DIR, exist_ok=True)
+create_tables() # Assicurati che le tabelle siano create con lo schema completo
 
-# --- Creazione dell'Interfaccia Utente ---
+# --- Frame del Menu Principale ---
+menu_frame = tk.Frame(root, padx=20, pady=20)
+menu_frame.pack(expand=True)
 
-# Frame principale per organizzare i contenuti (opzionale, ma buona pratica)
-main_frame = tk.Frame(root)
-main_frame.pack(padx=10, pady=10, fill="both", expand=True)
+tk.Label(menu_frame, text="Menu Principale", font=("Helvetica", 16, "bold")).pack(pady=20)
 
-# Aggiungi il frame per l'aggiunta di prodotti
-add_product_ui_frame = create_add_product_frame(main_frame)
-# add_product_ui_frame.pack() # Già impacchettato all'interno di create_add_product_frame
+# Bottoni per le diverse funzionalità
+tk.Button(menu_frame, text="Mostra Materiali", width=25, height=2,
+          command=lambda: open_view_products_window(root)).pack(pady=5)
 
-# Sezione Operazioni (Bottoni generali)
-operations_frame = tk.LabelFrame(main_frame, text="Operazioni Magazzino")
-operations_frame.pack(padx=10, pady=10, fill="x")
+tk.Button(menu_frame, text="Aggiungi Materiali", width=25, height=2,
+          command=lambda: open_add_product_window(root)).pack(pady=5)
 
-tk.Button(operations_frame, text="Mostra Prodotti", command=lambda: show_products_list_window(root)).pack(side=tk.LEFT, padx=5, pady=5)
-tk.Button(operations_frame, text="Stampa DDT", command=stampa_ddt).pack(side=tk.LEFT, padx=5, pady=5)
-# Aggiungi qui altri bottoni per modificare, eliminare, ecc. che richiameranno le rispettive funzioni UI
+tk.Button(menu_frame, text="Modifica/Cancella Materiali", width=25, height=2,
+          command=lambda: open_edit_delete_product_window(root)).pack(pady=5)
 
+tk.Button(menu_frame, text="Stampa DDT", width=25, height=2,
+          command=stampa_ddt).pack(pady=5) # Stampa DDT è ancora generica
+
+tk.Button(menu_frame, text="Esci", width=25, height=2,
+          command=chiudi_applicazione).pack(pady=15)
+
+# Protocollo per gestire la chiusura della finestra
 root.protocol("WM_DELETE_WINDOW", chiudi_applicazione)
-#Loop per far rimanere la finestra aperta
+
+# Loop principale dell'applicazione
 root.mainloop()

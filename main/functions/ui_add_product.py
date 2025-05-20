@@ -1,47 +1,49 @@
 import tkinter as tk
 from tkinter import messagebox
-from functions.db_utils import insert_prodotto, get_prodotto_by_codice # Importa solo le funzioni CRUD necessarie
+from functions.db_utils import insert_prodotto, get_prodotto_by_codice
+from functions.ui_common_utils import stampa_a_video, create_toplevel_window
 
-def create_add_product_frame(parent_frame):
-    """Crea e restituisce un LabelFrame per l'aggiunta di nuovi prodotti."""
-    add_product_frame = tk.LabelFrame(parent_frame, text="Aggiungi Nuovo Prodotto")
-    add_product_frame.pack(padx=10, pady=10, fill="x", expand=True)
+def open_add_product_window(parent_root):
+    """Apre una finestra per aggiungere un nuovo prodotto."""
+    add_window = create_toplevel_window(parent_root, "Aggiungi Nuovo Materiale")
 
-    # Campi di input
-    entries = {} # Dizionario per tenere traccia delle entry widget
+    # Dizionario per tenere traccia delle entry widget
+    entries = {}
 
-    tk.Label(add_product_frame, text="Codice Prodotto:").pack(anchor='w', padx=5, pady=2)
-    entries['codice'] = tk.Entry(add_product_frame)
+    tk.Label(add_window, text="Codice Materiale:").pack(anchor='w', padx=5, pady=2)
+    entries['codice'] = tk.Entry(add_window)
     entries['codice'].pack(fill="x", padx=5, pady=2)
 
-    tk.Label(add_product_frame, text="Nome Prodotto:").pack(anchor='w', padx=5, pady=2)
-    entries['nome'] = tk.Entry(add_product_frame)
+    tk.Label(add_window, text="Nome Materiale:").pack(anchor='w', padx=5, pady=2)
+    entries['nome'] = tk.Entry(add_window)
     entries['nome'].pack(fill="x", padx=5, pady=2)
 
-    tk.Label(add_product_frame, text="Descrizione (opzionale):").pack(anchor='w', padx=5, pady=2)
-    entries['descrizione'] = tk.Entry(add_product_frame)
+    tk.Label(add_window, text="Descrizione (opzionale):").pack(anchor='w', padx=5, pady=2)
+    entries['descrizione'] = tk.Entry(add_window)
     entries['descrizione'].pack(fill="x", padx=5, pady=2)
 
-    tk.Label(add_product_frame, text="Unità di Misura (es: pz, kg):").pack(anchor='w', padx=5, pady=2)
-    entries['unita_misura'] = tk.Entry(add_product_frame)
+    tk.Label(add_window, text="Unità di Misura (es: pz, kg):").pack(anchor='w', padx=5, pady=2)
+    entries['unita_misura'] = tk.Entry(add_window)
     entries['unita_misura'].pack(fill="x", padx=5, pady=2)
 
-    tk.Label(add_product_frame, text="Quantità Disponibile:").pack(anchor='w', padx=5, pady=2)
-    entries['quantita'] = tk.Entry(add_product_frame)
+    tk.Label(add_window, text="Quantità Disponibile:").pack(anchor='w', padx=5, pady=2)
+    entries['quantita'] = tk.Entry(add_window)
     entries['quantita'].pack(fill="x", padx=5, pady=2)
 
-    tk.Label(add_product_frame, text="Prezzo Unitario (opzionale):").pack(anchor='w', padx=5, pady=2)
-    entries['prezzo'] = tk.Entry(add_product_frame)
+    tk.Label(add_window, text="Prezzo Unitario (opzionale):").pack(anchor='w', padx=5, pady=2)
+    entries['prezzo'] = tk.Entry(add_window)
     entries['prezzo'].pack(fill="x", padx=5, pady=2)
 
-    # Bottone di salvataggio
-    tk.Button(add_product_frame, text="Aggiungi Prodotto",
-              command=lambda: handle_add_product(entries)
+    tk.Button(add_window, text="Salva Materiale",
+              command=lambda: handle_add_product(entries, add_window)
              ).pack(pady=10)
 
-    return add_product_frame
+    tk.Button(add_window, text="Annulla", command=add_window.destroy).pack(pady=5)
 
-def handle_add_product(entries):
+    add_window.wait_window() # Attendi che la finestra secondaria venga chiusa
+
+
+def handle_add_product(entries, window_to_close):
     """Gestisce la logica di aggiunta di un prodotto dall'interfaccia utente."""
     codice = entries['codice'].get().strip()
     nome = entries['nome'].get().strip()
@@ -50,9 +52,8 @@ def handle_add_product(entries):
     quantita_str = entries['quantita'].get().strip()
     prezzo_str = entries['prezzo'].get().strip() if entries['prezzo'].get().strip() else None
 
-    # Validazione input
     if not codice or not nome or not unita_misura or not quantita_str:
-        messagebox.showerror("Errore", "Codice, Nome, Unità di Misura e Quantità sono campi obbligatori!")
+        stampa_a_video("Errore: Codice, Nome, Unità di Misura e Quantità sono campi obbligatori!")
         return
 
     try:
@@ -61,21 +62,20 @@ def handle_add_product(entries):
             raise ValueError("La quantità non può essere negativa.")
         prezzo = float(prezzo_str) if prezzo_str else None
     except ValueError:
-        messagebox.showerror("Errore", "Quantità e Prezzo devono essere numeri validi.")
+        stampa_a_video("Errore: Quantità e Prezzo devono essere numeri validi.")
         return
 
-    # Controlla se il codice prodotto esiste già usando la funzione di basso livello
     if get_prodotto_by_codice(codice):
-        messagebox.showerror("Errore", f"Il prodotto con codice '{codice}' esiste già. Usa un codice unico.")
+        stampa_a_video(f"Errore: Il materiale con codice '{codice}' esiste già. Usa un codice unico.")
         return
 
-    # Chiama la funzione di basso livello per inserire il prodotto nel DB
     success = insert_prodotto(codice, nome, unita_misura, quantita, descrizione, prezzo)
 
     if success:
-        messagebox.showinfo("Successo", f"Prodotto '{nome}' (Codice: {codice}) aggiunto con successo!")
+        stampa_a_video(f"Materiale '{nome}' (Codice: {codice}) aggiunto con successo!")
         # Pulisci i campi
         for entry in entries.values():
             entry.delete(0, tk.END)
+        window_to_close.destroy() # Chiudi la finestra dopo il successo
     else:
-        messagebox.showerror("Errore", "Impossibile aggiungere il prodotto. Controlla il log per i dettagli (es. errore DB).")
+        stampa_a_video("Errore generico durante il salvataggio del materiale. Controlla il log.")

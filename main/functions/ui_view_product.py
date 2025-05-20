@@ -1,33 +1,53 @@
 import tkinter as tk
-from tkinter import messagebox
-from functions.db_utils import get_all_prodotti # Importa solo la funzione CRUD necessaria
+from tkinter import ttk # Importa ttk per Treeview (più robusto per le tabelle)
+from functions.db_utils import get_all_prodotti
+from functions.ui_common_utils import create_toplevel_window
 
-def show_products_list_window(parent_root):
-    """Crea e mostra una finestra TopLevel con la lista dei prodotti."""
-    list_window = tk.Toplevel(parent_root)
-    list_window.title("Lista Prodotti Magazzino")
-    list_window.transient(parent_root) # Rende la finestra figlia dipendente dalla principale
-    list_window.grab_set() # Blocca l'interazione con la finestra principale finché questa è aperta
+def open_view_products_window(parent_root):
+    """Apre una finestra per visualizzare tutti i prodotti in una tabella."""
+    view_window = create_toplevel_window(parent_root, "Lista Materiali in Magazzino")
 
-    products = get_all_prodotti() # Chiama la funzione di basso livello per recuperare i prodotti
+    products = get_all_prodotti()
 
+    # Usa Treeview per una visualizzazione a tabella più professionale
+    tree = ttk.Treeview(view_window, columns=("ID", "Codice", "Nome", "Descrizione", "UM", "Quantità", "Prezzo"), show="headings")
+    tree.pack(fill="both", expand=True, padx=10, pady=10)
+
+    # Definisci intestazioni delle colonne
+    tree.heading("ID", text="ID")
+    tree.heading("Codice", text="Codice")
+    tree.heading("Nome", text="Nome")
+    tree.heading("Descrizione", text="Descrizione")
+    tree.heading("UM", text="UM")
+    tree.heading("Quantità", text="Quantità")
+    tree.heading("Prezzo", text="Prezzo")
+
+    # Larghezza delle colonne (puoi aggiustarle)
+    tree.column("ID", width=40, anchor="center")
+    tree.column("Codice", width=100, anchor="w")
+    tree.column("Nome", width=150, anchor="w")
+    tree.column("Descrizione", width=200, anchor="w")
+    tree.column("UM", width=50, anchor="center")
+    tree.column("Quantità", width=80, anchor="center")
+    tree.column("Prezzo", width=80, anchor="e")
+
+    # Inserisci i dati
     if products:
-        # Intestazioni della "tabella"
-        header_text = "ID | Codice | Nome | Descrizione | UM | Quantità | Prezzo"
-        tk.Label(list_window, text=header_text, font=("Helvetica", 10, "bold")).pack(anchor='w', padx=5, pady=5)
-        tk.Frame(list_window, height=1, bg="gray").pack(fill='x', padx=5, pady=2) # Linea divisoria
-
-        # Scorri i prodotti e visualizzali
         for p in products:
-            display_text = (
-                f"ID: {p[0]} | Codice: {p[1]} | Nome: {p[2]} | Desc: {p[3] if p[3] else 'N/D'} | "
-                f"UM: {p[4]} | Qta: {p[5]} | Prezzo: {f'{p[6]:.2f} €' if p[6] is not None else 'N/D'} "
-            )
-            tk.Label(list_window, text=display_text).pack(anchor='w', padx=5, pady=1)
+            tree.insert("", "end", values=(
+                p[0], p[1], p[2], p[3] if p[3] else "N/D", p[4], p[5], f"{p[6]:.2f} €" if p[6] is not None else "N/D"
+            ))
     else:
-        tk.Label(list_window, text="Nessun prodotto nel magazzino.").pack(padx=20, pady=20)
+        # Aggiungi una riga per indicare che non ci sono prodotti
+        tree.insert("", "end", values=("", "", "Nessun materiale disponibile", "", "", "", ""), tags=('empty',))
+        tree.tag_configure('empty', background='#FFFFAA') # Sfondo giallo per avviso
 
-    # Pulsante per chiudere la finestra
-    tk.Button(list_window, text="Chiudi", command=list_window.destroy).pack(pady=10)
+    # Aggiungi una scrollbar
+    scrollbar = ttk.Scrollbar(view_window, orient="vertical", command=tree.yview)
+    tree.configure(yscrollcommand=scrollbar.set)
+    scrollbar.pack(side="right", fill="y")
 
-    list_window.wait_window() # Attendi che la finestra secondaria venga chiusa
+    # Bottone per chiudere la finestra
+    tk.Button(view_window, text="Chiudi", command=view_window.destroy).pack(pady=10)
+
+    view_window.wait_window()
