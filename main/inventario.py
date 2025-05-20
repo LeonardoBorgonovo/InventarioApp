@@ -10,7 +10,7 @@ from functions.ui_common_utils import stampa_a_video # Se vuoi usare stampa_a_vi
 from functions.ui_add_product import open_add_product_window
 from functions.ui_view_product import open_view_products_window
 from functions.ui_edit_delete_product import open_edit_delete_product_window
-from functions.stampa_utils import stampa_ddt
+from functions.ui_print_ddt import open_print_ddt_window
 
 # --- Configurazione del Path per il Database ---
 DATABASE_DIR = 'db/' # Ora si aspetta 'db/' nella stessa directory di main.py
@@ -26,7 +26,7 @@ def chiudi_applicazione():
 # --- Inizializzazione App Tkinter ---
 root = tk.Tk()
 root.title("Inventario Azienda Elettrica")
-root.geometry("400x300") # Dimensioni iniziali per la finestra del menu
+root.geometry("450x350") # Dimensioni iniziali per la finestra del menu
 
 # --- Inizializzazione Database ---
 os.makedirs(DATABASE_DIR, exist_ok=True)
@@ -49,10 +49,10 @@ tk.Button(menu_frame, text="Modifica/Cancella Materiali", width=25, height=2,
           command=lambda: open_edit_delete_product_window(root)).pack(pady=5)
 
 tk.Button(menu_frame, text="Stampa DDT", width=25, height=2,
-          command=stampa_ddt).pack(pady=5) # Stampa DDT è ancora generica
+          command=lambda: open_print_ddt_window(root)).pack(pady=5)
 
 tk.Button(menu_frame, text="Esci", width=25, height=2,
-          command=chiudi_applicazione).pack(pady=15)
+          command=chiudi_applicazione).pack(pady=5)
 
 # Protocollo per gestire la chiusura della finestra
 root.protocol("WM_DELETE_WINDOW", chiudi_applicazione)
