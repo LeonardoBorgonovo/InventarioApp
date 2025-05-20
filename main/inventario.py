@@ -1,8 +1,16 @@
 import tkinter as tk
-import sqlite3
+import os
 from tkinter import messagebox
-from functions.stampa_utils import stampa_ddt
-from functions.salva_prodotti import salva_prod
+
+# Importa le funzioni di basso livello per l'inizializzazione del DB
+from functions.db_utils import create_tables, create_connection
+
+# Importa le funzioni di alto livello per la gestione dell'UI
+from functions.ui_add_product import create_add_product_frame # Funzione per creare la sezione "Aggiungi Prodotto"
+from functions.ui_view_product import show_products_list_window # Funzione per mostrare la lista prodotti
+from functions.stampa_utils import stampa_ddt # La tua funzione per stampare il DDT
+
+DATABASE_PATH = '../db/inventario.db'
 
 #Funzione per stampare a video
 def stampa_a_video(testo):
@@ -11,46 +19,34 @@ def stampa_a_video(testo):
 #Funzione chiusura database
 def chiudi_applicazione():
     """Funzione per chiudere la connessione al database e poi la finestra."""
-    if conn:
-        conn.close()
-        print("Connessione al database chiusa.")
     root.destroy() # Chiude la finestra principale
 
 #Intestazione App
 root = tk.Tk()
 root.title("Inventario Azienda Elettrica")
 
-#Connessione al dB (se non esiste viene creato)
-conn = sqlite3.connect('../db/inventario.db')
-cursor = conn.cursor()
+# --- Inizializzazione Database ---
+# Assicurati che la directory 'db' esista
+os.makedirs(os.path.dirname(DATABASE_PATH), exist_ok=True)
+create_tables() # Chiama la funzione per creare o verificare le tabelle del DB
 
-#Creazione tabella prodotti
-cursor.execute('''
-CREATE TABLE IF NOT EXISTS prodotti(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nome TEXT NOT NULL
-    )
-''')
+# --- Creazione dell'Interfaccia Utente ---
 
-#Commento delle modifiche
-conn.commit()
+# Frame principale per organizzare i contenuti (opzionale, ma buona pratica)
+main_frame = tk.Frame(root)
+main_frame.pack(padx=10, pady=10, fill="both", expand=True)
 
-#Etichetta per il nome Prodotto
-label_nome = tk.Label(root, text="Nome Prodotto:")
-label_nome.pack() #pack() è un gestore di layout
+# Aggiungi il frame per l'aggiunta di prodotti
+add_product_ui_frame = create_add_product_frame(main_frame)
+# add_product_ui_frame.pack() # Già impacchettato all'interno di create_add_product_frame
 
-# Campo di testo per inserire il nome del prodotto
-entry_nome = tk.Entry(root)
-entry_nome.pack()
+# Sezione Operazioni (Bottoni generali)
+operations_frame = tk.LabelFrame(main_frame, text="Operazioni Magazzino")
+operations_frame.pack(padx=10, pady=10, fill="x")
 
-# Bottone per salvare il prodotto
-bottone_salva = tk.Button(root, text="Salva Prodotto", command=lambda: salva_prod(root, entry_nome, conn, cursor))
-bottone_salva.pack()
-
-# Bottone per stampare il DDT
-bottone_stampa_ddt = tk.Button(root, text="Stampa DDT", command=stampa_ddt)
-bottone_stampa_ddt.pack()
-
+tk.Button(operations_frame, text="Mostra Prodotti", command=lambda: show_products_list_window(root)).pack(side=tk.LEFT, padx=5, pady=5)
+tk.Button(operations_frame, text="Stampa DDT", command=stampa_ddt).pack(side=tk.LEFT, padx=5, pady=5)
+# Aggiungi qui altri bottoni per modificare, eliminare, ecc. che richiameranno le rispettive funzioni UI
 
 root.protocol("WM_DELETE_WINDOW", chiudi_applicazione)
 #Loop per far rimanere la finestra aperta
