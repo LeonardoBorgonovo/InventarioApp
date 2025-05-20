@@ -57,7 +57,7 @@ def handle_edit_product(tree_widget, parent_window, refresh_callback):
         stampa_a_video("Seleziona un materiale dalla lista per modificarlo.")
         return
 
-    product_id = int(tree_widget.item(selected_item, "iid")) # Ottiene l'ID del prodotto dal Treeview
+    product_id = int(selected_item) # L'ID interno (iid) è già l'ID del database quando lo hai inserito
     current_product = get_prodotto_by_codice(tree_widget.item(selected_item, "values")[1]) # Recupera l'intero prodotto tramite codice
 
     if not current_product:
@@ -132,7 +132,7 @@ def handle_delete_product(tree_widget, parent_window, refresh_callback):
         stampa_a_video("Seleziona un materiale dalla lista per eliminarlo.")
         return
 
-    product_id = int(tree_widget.item(selected_item, "iid"))
+    product_id = int(selected_item)
     product_name = tree_widget.item(selected_item, "values")[2] # Nome dal Treeview
 
     confirm = messagebox.askyesno("Conferma Eliminazione", f"Sei sicuro di voler eliminare il materiale '{product_name}'?")
