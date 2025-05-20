@@ -1,8 +1,8 @@
 import tkinter as tk
 import sqlite3
 from tkinter import messagebox
-from stampa_utils import genera_ddt, stampa_ddt
-from salva_prodotti import salva_prod
+from functions.stampa_utils import stampa_ddt
+from functions.salva_prodotti import salva_prod
 
 #Funzione per stampare a video
 def stampa_a_video(testo):
@@ -21,7 +21,7 @@ root = tk.Tk()
 root.title("Inventario Azienda Elettrica")
 
 #Connessione al dB (se non esiste viene creato)
-conn = sqlite3.connect('inventario.db')
+conn = sqlite3.connect('../db/inventario.db')
 cursor = conn.cursor()
 
 #Creazione tabella prodotti

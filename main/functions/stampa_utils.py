@@ -10,7 +10,7 @@ import subprocess
 
 
 
-DDT_COUNTER_FILE = "ddt_counter.txt"
+DDT_COUNTER_FILE = "counter/ddt_counter.txt"
 DDT_OUTPUT_PATH = r"C:\Users\KLB\Desktop\ProvaPdf"
 
 # Assicurati che la directory di output per i PDF esista
