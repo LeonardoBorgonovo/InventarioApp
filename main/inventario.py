@@ -27,7 +27,7 @@ def chiudi_applicazione():
 # --- Inizializzazione App Tkinter ---
 root = tk.Tk()
 root.title("Inventario Azienda Elettrica")
-root.geometry("450x350") # Dimensioni iniziali per la finestra del menu
+root.geometry("600x500") # Dimensioni iniziali per la finestra del menu
 
 # --- Inizializzazione Database ---
 os.makedirs(DATABASE_DIR, exist_ok=True)

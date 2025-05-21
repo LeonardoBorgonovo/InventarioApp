@@ -12,7 +12,7 @@ import subprocess
 # --- Configurazione del Path ---
 # Ho mantenuto i tuoi percorsi originali
 DDT_COUNTER_FILE = "../counter/ddt_counter.txt"
-DDT_OUTPUT_PATH = r"C:\Users\KLB\Desktop\ProvaPdf"
+DDT_OUTPUT_PATH = r"C:\Users\borgo\OneDrive\Desktop\Adobe Photoshop 2020"
 DATABASE_PATH_FOR_STAMPA_UTILS = os.path.join(os.path.dirname(__file__),'..','db','inventario.db')
 
 # Assicurati che le directory esistano
