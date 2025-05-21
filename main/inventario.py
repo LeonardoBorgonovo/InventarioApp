@@ -11,10 +11,11 @@ from functions.ui_add_product import open_add_product_window
 from functions.ui_view_product import open_view_products_window
 from functions.ui_edit_delete_product import open_edit_delete_product_window
 from functions.ui_print_ddt import open_print_ddt_window
+from functions.stampa_utils import stampa_ddt_wrapper
 
 # --- Configurazione del Path per il Database ---
 DATABASE_DIR = 'db/' # Ora si aspetta 'db/' nella stessa directory di main.py
-DATABASE_PATH = os.path.join(DATABASE_DIR, 'inventario.db')
+DATABASE_PATH_MAIN = os.path.join(DATABASE_DIR, 'inventario.db')
 
 # --- Funzione chiusura applicazione ---
 def chiudi_applicazione():

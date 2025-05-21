@@ -1,8 +1,9 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog
-from functions.db_utils import get_all_prodotti
+from functions.db_utils import get_all_prodotti, search_prodotti
 from functions.ui_common_utils import create_toplevel_window, stampa_a_video
-from functions.stampa_utils import stampa_ddt_wrapper # Per generare il DDT
+from functions.stampa_utils import stampa_ddt_wrapper 
+
 
 def open_print_ddt_window(parent_root):
     """Apre una finestra per selezionare i materiali e generare il DDT."""
@@ -43,9 +44,10 @@ def open_print_ddt_window(parent_root):
     info_grid_row += 1
 
     info_frame.grid_columnconfigure(1, weight=1)
+    
 
     # --- Frame Selezione Materiali ---
-    materials_frame = ttk.LabelFrame(print_ddt_window, text="Seleziona Materiali (Doppio click per modificare/selezionare)")
+    materials_frame = ttk.LabelFrame(print_ddt_window, text="Seleziona Materiali (Doppio click per modificare quantità e selezionare)")
     materials_frame.pack(padx=10, pady=5, fill="both", expand=True)
 
     tree = ttk.Treeview(materials_frame, columns=("ID", "Codice", "Nome", "UM", "Quantità Magazzino", "Seleziona", "Quantità DDT"), show="headings")
@@ -64,64 +66,79 @@ def open_print_ddt_window(parent_root):
     tree.column("Nome", width=120, anchor="w")
     tree.column("UM", width=50, anchor="center")
     tree.column("Quantità Magazzino", width=80, anchor="center")
-    tree.column("Seleziona", width=50, anchor="center") # Più piccola
+    tree.column("Seleziona", width=50, anchor="center")
     tree.column("Quantità DDT", width=80, anchor="center")
 
     # Dizionario per tenere traccia dello stato di selezione e della quantità per ogni item
-    # key: iid del Treeview (ID del prodotto), value: {'product_data': tuple, 'is_selected': Boolean, 'qty_for_ddt': int}
-    selected_products_state = {} # Nuovo dizionario per gestire lo stato
+    # key: iid del Treeview (che sarà l'ID numerico del prodotto dal DB convertito a stringa)
+    # value: {'product_data': tuple, 'is_selected': Boolean, 'qty_for_ddt': int}
+    selected_products_state = {} 
 
     def load_products_into_tree():
         for i in tree.get_children():
             tree.delete(i)
-        selected_products_state.clear() # Pulisci lo stato precedente
+        selected_products_state.clear() 
 
         products = get_all_prodotti()
         if products:
             for p in products:
-                item_id = p[0]
-                # Inizializza lo stato: non selezionato, quantità 0 per il DDT (o la q.tà magazzino come default)
-                selected_products_state[item_id] = {
+                # p: (id, codice, nome, descrizione, unita_misura, quantita_disponibile, prezzo_unitario)
+                # Usiamo l'ID numerico del prodotto come iid della riga del Treeview (convertito a stringa)
+                item_id_str = str(p[0]) 
+                
+                # Inizializza lo stato: non selezionato, quantità 0 per il DDT
+                selected_products_state[item_id_str] = {
                     'product_data': p,
                     'is_selected': False,
-                    'qty_for_ddt': 0 # Inizializza la quantità per il DDT a 0
+                    'qty_for_ddt': 0 
                 }
                 # Visualizza " " per non selezionato, 0 per quantità DDT inizialmente
-                tree.insert("", "end", iid=item_id, values=(
+                tree.insert("", "end", iid=item_id_str, values=(
                     p[0], p[1], p[2], p[4], p[5], "", "0" 
                 ))
         else:
-            tree.insert("", "end", values=("", "", "Nessun materiale disponibile", "", "", "", ""), tags=('empty',))
+            # Se non ci sono prodotti, inserisci una riga speciale che non è un prodotto reale
+            tree.insert("", "end", iid="no_data_row", values=("", "", "Nessun materiale disponibile", "", "", "", ""), tags=('empty',))
             tree.tag_configure('empty', background='#FFFFAA')
             
     load_products_into_tree()
 
     # Funzione per gestire il doppio click sulla riga
     def on_item_double_click(event):
-        item_id = tree.focus() # Ottiene l'iid della riga cliccata
-        if not item_id:
+        item_id = tree.focus() # Ottiene l'iid della riga cliccata (es. "1", "2", o "no_data_row")
+        
+        # --- Aggiungi questa verifica ---
+        if not item_id or item_id == "no_data_row": # Se non c'è selezione o è la riga "nessun dato"
+            stampa_a_video("Seleziona un materiale valido dalla lista (doppio click) per modificarlo.")
             return
 
+        # L'item_id ottenuto da tree.focus() sarà l'ID numerico del prodotto (come stringa)
         current_state = selected_products_state.get(item_id)
         if not current_state:
-            return # Non dovrebbe succedere
+            # Questo caso si verifica solo se c'è un iid nel Treeview che non corrisponde
+            # a una chiave valida nel nostro dizionario di stato.
+            # Dovrebbe essere raro con la logica attuale, ma è una buona safety net.
+            stampa_a_video("Errore interno: stato del materiale non trovato per la riga selezionata. Riprova.")
+            return 
 
+        product_name = current_state['product_data'][2]
         current_qty_ddt = current_state['qty_for_ddt']
         current_mag_qty = current_state['product_data'][5] # Quantità in magazzino
 
-        # Richiedi la nuova quantità (con un limite massimo uguale alla quantità in magazzino)
+        # Richiedi la nuova quantità
         new_qty_str = simpledialog.askstring(
             "Modifica Quantità DDT",
-            f"Inserisci la quantità per il DDT di '{current_state['product_data'][2]}'\n"
-            f"(Disponibile: {current_mag_qty}):",
-            initialvalue=str(current_qty_ddt if current_qty_ddt > 0 else current_mag_qty) # Prepopola con q.tà attuale per DDT o q.tà magazzino
+            f"Inserisci la quantità per il DDT di '{product_name}'\n"
+            f"(Disponibile in magazzino: {current_mag_qty}):",
+            initialvalue=str(current_qty_ddt if current_qty_ddt > 0 else current_mag_qty), # Prepopola con q.tà attuale per DDT o q.tà magazzino
+            parent=print_ddt_window # Associa il simpledialog alla finestra principale del DDT
         )
 
         if new_qty_str is None: # Utente ha cliccato Annulla
             return
 
         try:
-            new_qty = int(new_qty_str)
+            new_qty = float(new_qty_str)
             if new_qty < 0:
                 raise ValueError("La quantità non può essere negativa.")
             if new_qty > current_mag_qty:
@@ -134,13 +151,13 @@ def open_print_ddt_window(parent_root):
             # Aggiorna la visualizzazione nel Treeview
             selection_mark = "✓" if new_qty > 0 else ""
             tree.item(item_id, values=(
-                current_state['product_data'][0],
-                current_state['product_data'][1],
-                current_state['product_data'][2],
-                current_state['product_data'][4],
-                current_state['product_data'][5],
-                selection_mark,
-                str(new_qty)
+                current_state['product_data'][0], # ID originale
+                current_state['product_data'][1], # Codice
+                current_state['product_data'][2], # Nome
+                current_state['product_data'][4], # UM
+                current_state['product_data'][5], # Quantità Magazzino
+                selection_mark,                   # Selezione
+                str(new_qty)                      # Quantità DDT
             ))
         except ValueError as e:
             stampa_a_video(f"Errore quantità: {e}. Inserisci un numero intero valido.")
@@ -151,7 +168,8 @@ def open_print_ddt_window(parent_root):
     def generate_ddt_from_selection():
         selected_products_for_ddt = []
         for item_id, state in selected_products_state.items():
-            if state['is_selected'] and state['qty_for_ddt'] > 0:
+            # Assicurati che l'item_id non sia la riga speciale di "nessun dato"
+            if item_id != "no_data_row" and state['is_selected'] and state['qty_for_ddt'] > 0:
                 original_product_data = list(state['product_data'])
                 # Sostituisci la quantità in magazzino con la quantità per il DDT
                 original_product_data[5] = state['qty_for_ddt'] 
@@ -172,7 +190,6 @@ def open_print_ddt_window(parent_root):
             stampa_a_video("Compila tutti i campi obbligatori (Mittente, Destinatario, Causale, Luogo di Destinazione)!")
             return
 
-        # Ora passiamo tutti i dettagli del DDT alla funzione di stampa
         ddt_details = {
             'mittente': {'nome': mittente, 'piva_cf': piva_mittente},
             'destinatario': {'nome': destinatario, 'piva_cf': piva_destinatario},
@@ -181,14 +198,16 @@ def open_print_ddt_window(parent_root):
         }
 
         try:
-            # Qui la chiamata a stampa_ddt_wrapper dovrà essere aggiornata in stampa_utils.py
-            # Per ora la lasciamo così, ma sappiamo che va modificata!
             stampa_ddt_wrapper(selected_products_for_ddt, ddt_details) 
-            stampa_a_video("DDT generato con successo!")
-            # Puoi scegliere di chiudere la finestra dopo la generazione
-            # print_ddt_window.destroy()
+            messagebox.showinfo("DDT Generato", "DDT generato e magazzino aggiornato con successo!")
+
+            # --- AGGIUNGI QUESTE RIGHE per aggiornare la UI ---
+            load_products_into_tree() # Ricarica i prodotti per mostrare le quantità aggiornate
+            selected_products_state.clear() # Pulisci lo stato dei prodotti selezionati
+            stampa_a_video("DDT generato con successo e magazzino aggiornato.")
+            
         except Exception as e:
-            stampa_a_video(f"Errore durante la generazione del DDT: {e}")
+            messagebox.showerror("Errore Generazione DDT", f"Si è verificato un errore: {e}")
 
     # --- Bottoni ---
     button_frame = tk.Frame(print_ddt_window)

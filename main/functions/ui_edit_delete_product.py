@@ -24,8 +24,6 @@ def open_edit_delete_product_window(parent_root):
     rb_nome.pack(side=tk.LEFT, padx=5)
     rb_codice = ttk.Radiobutton(search_frame, text="Codice", variable=search_by_var, value="codice")
     rb_codice.pack(side=tk.LEFT, padx=5)
-    rb_entrambi = ttk.Radiobutton(search_frame, text="Nome o Codice", variable=search_by_var, value="nome_or_codice")
-    rb_entrambi.pack(side=tk.LEFT, padx=5)
 
     # Treeview per mostrare i prodotti
     tree = ttk.Treeview(edit_delete_window, columns=("ID", "Codice", "Nome", "UM", "Quantità", "Prezzo"), show="headings")
@@ -93,28 +91,58 @@ def open_edit_delete_product_window(parent_root):
     edit_delete_window.wait_window()
 
 def handle_edit_product(tree_widget, parent_window, refresh_callback):
-    selected_item = tree_widget.focus()
-    if not selected_item:
+    # selected_item qui è l'iid della riga selezionata nella Treeview,
+    # che noi abbiamo impostato essere l'ID del DB (p[0])
+    selected_item_iid = tree_widget.focus() 
+    if not selected_item_iid:
         stampa_a_video("Seleziona un materiale dalla lista per modificarlo.")
         return
 
-    product_id = int(selected_item)
-    current_product = get_prodotto_by_codice(product_id)
-
-    if not current_product:
-        stampa_a_video("Errore: Materiale non trovato nel database.")
+    # Recupera i valori della riga selezionata dalla Treeview.
+    # Questi valori sono nella stessa sequenza delle colonne definite:
+    # ("ID", "Codice", "Nome", "UM", "Quantità", "Prezzo")
+    selected_values = tree_widget.item(selected_item_iid, 'values')
+    
+    if not selected_values:
+        stampa_a_video("Errore: Impossibile recuperare i dati del materiale selezionato dalla Treeview.")
+        print(f"DEBUG (handle_edit_product): selected_values è vuoto per iid: {selected_item_iid}")
         return
 
+    print(f"DEBUG (handle_edit_product): Valori selezionati dalla Treeview: {selected_values}")
+    
+    # Estrai l'ID del database (che è il primo elemento nella tupla values)
+    # Questo ID verrà usato per l'operazione di UPDATE
+    product_id_from_db = int(selected_values[0]) 
+    
+    # Estrai il CODICE del prodotto (che è il secondo elemento nella tupla values)
+    # Questo codice verrà usato per recuperare il prodotto dal database tramite get_prodotto_by_codice
+    product_code_from_tree = selected_values[1] 
+
+    print(f"DEBUG (handle_edit_product): ID del DB estratto (per update): {product_id_from_db}")
+    print(f"DEBUG (handle_edit_product): Codice passato a get_prodotto_by_codice: '{product_code_from_tree}'")
+    
+    # Ora recupera il prodotto dal database usando il suo CODICE
+    current_product = get_prodotto_by_codice(product_code_from_tree) 
+
+    if not current_product:
+        stampa_a_video(f"Errore: Materiale non trovato nel database per Codice: '{product_code_from_tree}'.")
+        print(f"DEBUG (handle_edit_product): Prodotto con Codice '{product_code_from_tree}' non trovato dopo la ricerca nel DB.")
+        return
+
+    # Se il prodotto è stato trovato, current_product sarà una tupla:
+    # (id, codice, nome, descrizione, unita_misura, quantita_disponibile, prezzo_unitario)
+    
     edit_dialog = create_toplevel_window(parent_window, f"Modifica Materiale: {current_product[2]}")
 
     entries = {}
     
+    # Popola i campi del dialogo di modifica con i dati del prodotto recuperato dal DB
     fields = [
         ("Codice:", 'codice', current_product[1]),
         ("Nome:", 'nome', current_product[2]),
         ("Descrizione:", 'descrizione', current_product[3] if current_product[3] else ''),
         ("Unità di Misura:", 'unita_misura', current_product[4]),
-        ("Quantità:", 'quantita', str(current_product[5])),
+        ("Quantità:", 'quantita', str(current_product[5])), # Quantità dal DB
         ("Prezzo Unitario:", 'prezzo', str(current_product[6]) if current_product[6] is not None else '')
     ]
 
@@ -138,7 +166,8 @@ def handle_edit_product(tree_widget, parent_window, refresh_callback):
             return
 
         try:
-            new_quantita = int(new_quantita_str)
+            # Importante: usa float() per la quantità per gestire i decimali
+            new_quantita = float(new_quantita_str) 
             if new_quantita < 0:
                 raise ValueError("La quantità non può essere negativa.")
             new_prezzo = float(new_prezzo_str) if new_prezzo_str else None
@@ -146,17 +175,20 @@ def handle_edit_product(tree_widget, parent_window, refresh_callback):
             stampa_a_video("Errore: Quantità e Prezzo devono essere numeri validi.")
             return
 
+        # Verifica se il nuovo codice è già utilizzato da un altro prodotto
+        # Escludi il prodotto corrente dalla verifica del codice duplicato
         existing_product_with_new_code = get_prodotto_by_codice(new_codice)
-        if existing_product_with_new_code and existing_product_with_new_code[0] != product_id:
+        if existing_product_with_new_code and existing_product_with_new_code[0] != product_id_from_db: # Confronta con l'ID originale del prodotto
             stampa_a_video(f"Errore: Il nuovo codice '{new_codice}' è già utilizzato da un altro materiale.")
             return
             
-        success = update_prodotto(product_id, new_codice, new_nome, new_unita_misura, new_quantita, new_descrizione, new_prezzo)
+        # Chiama update_prodotto con l'ID del DB corretto
+        success = update_prodotto(product_id_from_db, new_codice, new_nome, new_unita_misura, new_quantita, new_descrizione, new_prezzo)
 
         if success:
             stampa_a_video(f"Materiale '{new_nome}' (Codice: {new_codice}) aggiornato con successo!")
             edit_dialog.destroy()
-            refresh_callback() # Ricarica la lista nella Treeview
+            refresh_callback() # Ricarica la lista nella Treeview per mostrare le modifiche
         else:
             stampa_a_video("Errore durante l'aggiornamento del materiale. Controlla il log.")
 

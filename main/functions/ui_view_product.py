@@ -24,8 +24,6 @@ def open_view_products_window(parent_root):
     rb_nome.pack(side=tk.LEFT, padx=5)
     rb_codice = ttk.Radiobutton(search_frame, text="Codice", variable=search_by_var, value="codice")
     rb_codice.pack(side=tk.LEFT, padx=5)
-    rb_entrambi = ttk.Radiobutton(search_frame, text="Nome o Codice", variable=search_by_var, value="nome_or_codice")
-    rb_entrambi.pack(side=tk.LEFT, padx=5)
 
     # Treeview per la visualizzazione dei risultati
     tree = ttk.Treeview(view_window, columns=("ID", "Codice", "Nome", "Descrizione", "UM", "Quantità", "Prezzo"), show="headings")

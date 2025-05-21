@@ -1,7 +1,7 @@
 import sqlite3
 import os
 
-DATABASE_PATH = '../../../db/inventario.db' # Aggiornato con il percorso della cartella 'db'
+DATABASE_PATH = os.path.join(os.path.dirname(__file__),'..','db','inventario.db')
 
 def create_connection():
     """Crea una connessione al database SQLite."""
@@ -26,7 +26,7 @@ def create_tables():
                 nome TEXT NOT NULL,
                 descrizione TEXT,
                 unita_misura TEXT NOT NULL,
-                quantita_disponibile INTEGER NOT NULL,
+                quantita_disponibile REAL NOT NULL,
                 prezzo_unitario REAL
             )
         ''')
@@ -62,17 +62,29 @@ def insert_prodotto(codice, nome, unita_misura, quantita_disponibile, descrizion
 
 def get_prodotto_by_codice(codice):
     """Recupera un prodotto tramite il suo codice. Restituisce la tupla del prodotto o None."""
+    print(f"DEBUG (get_prodotto_by_codice): Tentativo di recuperare prodotto con codice: '{codice}'")
     conn = create_connection()
     if conn:
         try:
             cursor = conn.cursor()
             cursor.execute("SELECT id, codice, nome, descrizione, unita_misura, quantita_disponibile, prezzo_unitario FROM prodotti WHERE codice = ?", (codice,))
-            return cursor.fetchone()
+            result = cursor.fetchone()
+            if result:
+                print(f"DEBUG (get_prodotto_by_codice): Trovato prodotto: {result}")
+            else:
+                print(f"DEBUG (get_prodotto_by_codice): Nessun prodotto trovato con codice: '{codice}'")
+                # Aggiungi un'ulteriore verifica: prova a stampare tutti i prodotti
+                cursor.execute("SELECT * FROM prodotti")
+                all_products = cursor.fetchall()
+                print(f"DEBUG (get_prodotto_by_codice): Tutti i prodotti nel DB: {all_products}")
+
+            return result
         except sqlite3.Error as e:
-            print(f"Errore DB durante il recupero del prodotto: {e}")
+            print(f"ERRORE SQLite in get_prodotto_by_codice: {e}")
             return None
         finally:
             conn.close()
+    print("DEBUG (get_prodotto_by_codice): Connessione al DB fallita.")
     return None
 
 # --- OTTIENE TUTTI I PRODOTTI ---
