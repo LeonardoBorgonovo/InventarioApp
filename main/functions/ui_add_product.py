@@ -57,7 +57,7 @@ def handle_add_product(entries, window_to_close):
         return
 
     try:
-        quantita = int(quantita_str)
+        quantita = float(quantita_str)
         if quantita < 0:
             raise ValueError("La quantità non può essere negativa.")
         prezzo = float(prezzo_str) if prezzo_str else None
