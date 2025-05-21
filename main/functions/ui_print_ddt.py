@@ -4,6 +4,8 @@ from functions.db_utils import get_all_prodotti, search_prodotti
 from functions.ui_common_utils import create_toplevel_window, stampa_a_video
 from functions.stampa_utils import stampa_ddt_wrapper 
 
+# Per tenere traccia dei prodotti selezionati per il DDT
+selected_products_state = {}
 
 def open_print_ddt_window(parent_root):
     """Apre una finestra per selezionare i materiali e generare il DDT."""
@@ -44,7 +46,6 @@ def open_print_ddt_window(parent_root):
     info_grid_row += 1
 
     info_frame.grid_columnconfigure(1, weight=1)
-    
 
     # --- Frame Selezione Materiali ---
     materials_frame = ttk.LabelFrame(print_ddt_window, text="Seleziona Materiali (Doppio click per modificare quantità e selezionare)")

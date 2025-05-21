@@ -62,21 +62,13 @@ def insert_prodotto(codice, nome, unita_misura, quantita_disponibile, descrizion
 
 def get_prodotto_by_codice(codice):
     """Recupera un prodotto tramite il suo codice. Restituisce la tupla del prodotto o None."""
-    print(f"DEBUG (get_prodotto_by_codice): Tentativo di recuperare prodotto con codice: '{codice}'")
+    
     conn = create_connection()
     if conn:
         try:
             cursor = conn.cursor()
             cursor.execute("SELECT id, codice, nome, descrizione, unita_misura, quantita_disponibile, prezzo_unitario FROM prodotti WHERE codice = ?", (codice,))
-            result = cursor.fetchone()
-            if result:
-                print(f"DEBUG (get_prodotto_by_codice): Trovato prodotto: {result}")
-            else:
-                print(f"DEBUG (get_prodotto_by_codice): Nessun prodotto trovato con codice: '{codice}'")
-                # Aggiungi un'ulteriore verifica: prova a stampare tutti i prodotti
-                cursor.execute("SELECT * FROM prodotti")
-                all_products = cursor.fetchall()
-                print(f"DEBUG (get_prodotto_by_codice): Tutti i prodotti nel DB: {all_products}")
+            result = cursor.fetchone()   
 
             return result
         except sqlite3.Error as e:
@@ -84,7 +76,7 @@ def get_prodotto_by_codice(codice):
             return None
         finally:
             conn.close()
-    print("DEBUG (get_prodotto_by_codice): Connessione al DB fallita.")
+    
     return None
 
 # --- OTTIENE TUTTI I PRODOTTI ---

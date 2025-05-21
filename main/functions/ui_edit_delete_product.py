@@ -105,10 +105,7 @@ def handle_edit_product(tree_widget, parent_window, refresh_callback):
     
     if not selected_values:
         stampa_a_video("Errore: Impossibile recuperare i dati del materiale selezionato dalla Treeview.")
-        print(f"DEBUG (handle_edit_product): selected_values è vuoto per iid: {selected_item_iid}")
         return
-
-    print(f"DEBUG (handle_edit_product): Valori selezionati dalla Treeview: {selected_values}")
     
     # Estrai l'ID del database (che è il primo elemento nella tupla values)
     # Questo ID verrà usato per l'operazione di UPDATE
@@ -117,16 +114,12 @@ def handle_edit_product(tree_widget, parent_window, refresh_callback):
     # Estrai il CODICE del prodotto (che è il secondo elemento nella tupla values)
     # Questo codice verrà usato per recuperare il prodotto dal database tramite get_prodotto_by_codice
     product_code_from_tree = selected_values[1] 
-
-    print(f"DEBUG (handle_edit_product): ID del DB estratto (per update): {product_id_from_db}")
-    print(f"DEBUG (handle_edit_product): Codice passato a get_prodotto_by_codice: '{product_code_from_tree}'")
     
     # Ora recupera il prodotto dal database usando il suo CODICE
     current_product = get_prodotto_by_codice(product_code_from_tree) 
 
     if not current_product:
         stampa_a_video(f"Errore: Materiale non trovato nel database per Codice: '{product_code_from_tree}'.")
-        print(f"DEBUG (handle_edit_product): Prodotto con Codice '{product_code_from_tree}' non trovato dopo la ricerca nel DB.")
         return
 
     # Se il prodotto è stato trovato, current_product sarà una tupla:
