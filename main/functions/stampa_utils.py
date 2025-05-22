@@ -7,17 +7,30 @@ from reportlab.lib.units import cm, inch, mm # Possiamo usare diverse unità
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph, Table, TableStyle
 from reportlab.lib import colors
-import subprocess
+from functions.find_desktop import create_app_folder_on_desktop
+import subprocess 
 
-# --- Configurazione del Path ---
-# Ho mantenuto i tuoi percorsi originali
-DDT_COUNTER_FILE = "../counter/ddt_counter.txt"
-DDT_OUTPUT_PATH = r"C:\Users\borgo\OneDrive\Desktop\Adobe Photoshop 2020"
+# Percorso per il file contatore DDT (relativo alla posizione di questo script)
+DDT_COUNTER_FILE = os.path.join(os.path.dirname(__file__), '..', 'counter', 'ddt_counter.txt')
+# Percorso per il database (relativo alla posizione di questo script)
 DATABASE_PATH_FOR_STAMPA_UTILS = os.path.join(os.path.dirname(__file__),'..','db','inventario.db')
 
-# Assicurati che le directory esistano
-os.makedirs(DDT_OUTPUT_PATH, exist_ok=True)
-os.makedirs(os.path.dirname(DDT_COUNTER_FILE), exist_ok=True) # Assicurati che esista anche la directory del counter
+# --- Nuova gestione del percorso di output dei PDF ---
+# Nome della cartella che verrà creata sul Desktop dell'utente
+DDT_FOLDER_NAME = "DDT_AppInventario" 
+# Ottieni il percorso dinamico per la cartella di output dei PDF
+DDT_OUTPUT_PATH = create_app_folder_on_desktop(DDT_FOLDER_NAME)
+
+# Assicurati che la directory del counter esista
+os.makedirs(os.path.dirname(DDT_COUNTER_FILE), exist_ok=True)
+
+# Se DDT_OUTPUT_PATH è None (es. sistema operativo non riconosciuto o errore creazione),
+# gestisci l'errore. Potresti voler impostare un percorso di fallback qui.
+if DDT_OUTPUT_PATH is None:
+    print("ERRORE: Impossibile determinare il percorso di output per i PDF. La generazione del DDT potrebbe fallire.")
+    # Esempio di fallback (potrebbe non essere desiderabile in produzione)
+    # DDT_OUTPUT_PATH = os.path.join(os.getcwd(), "temp_ddt_output")
+    # os.makedirs(DDT_OUTPUT_PATH, exist_ok=True)# --- Configurazione del Path ---
 
 # --- Funzioni per il contatore DDT ---
 def get_current_ddt_number():
