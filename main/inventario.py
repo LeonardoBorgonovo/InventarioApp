@@ -1,37 +1,41 @@
 import tkinter as tk
 from tkinter import messagebox
 import os
+import sys # Importa sys per la gestione dell'uscita in caso di errore
 
-# Importa le funzioni di basso livello per l'inizializzazione del DB
-from functions.db_utils import create_tables, create_connection
+
+from functions.db_utils import create_tables
 
 # Importa le funzioni di alto livello per la gestione dell'UI
-from functions.ui_common_utils import stampa_a_video # Se vuoi usare stampa_a_video nel main
 from functions.ui_add_product import open_add_product_window
 from functions.ui_view_product import open_view_products_window
 from functions.ui_edit_delete_product import open_edit_delete_product_window
 from functions.ui_print_ddt import open_print_ddt_window
-from functions.stampa_utils import stampa_ddt_wrapper
 
-# --- Configurazione del Path per il Database ---
-DATABASE_DIR = 'db/' # Ora si aspetta 'db/' nella stessa directory di main.py
-DATABASE_PATH_MAIN = os.path.join(DATABASE_DIR, 'inventario.db')
+# Importa la funzione per inizializzare i file dati persistenti
+from functions.data_manager import initialize_data_files, PERSISTENT_DB_PATH, PERSISTENT_COUNTER_PATH
+
+
+try:
+    initialize_data_files()
+except SystemExit:
+    print("Errore durante l'inizializzazione dei file dati. L'applicazione verrà chiusa.")
+    sys.exit(1)
 
 # --- Funzione chiusura applicazione ---
 def chiudi_applicazione():
     """Funzione per chiudere la finestra dell'applicazione."""
-    # La gestione della connessione è incapsulata in db_utils,
-    # quindi non c'è una 'conn' globale da chiudere qui direttamente.
     root.destroy()
 
 # --- Inizializzazione App Tkinter ---
 root = tk.Tk()
-root.title("Inventario Azienda Elettrica")
+root.title("Inventario TECNOLUX")
 root.geometry("600x500") # Dimensioni iniziali per la finestra del menu
 
-# --- Inizializzazione Database ---
-os.makedirs(DATABASE_DIR, exist_ok=True)
-create_tables() # Assicurati che le tabelle siano create con lo schema completo
+# --- Inizializzazione Database (Creazione Tabelle) ---
+# Non è più necessario creare la directory 'db/' qui, perché i file saranno in PERSISTENT_DB_PATH
+# os.makedirs(DATABASE_DIR, exist_ok=True) # Rimuovi questa riga
+create_tables() # Questa funzione (da db_utils) DEVE ORA usare PERSISTENT_DB_PATH
 
 # --- Frame del Menu Principale ---
 menu_frame = tk.Frame(root, padx=20, pady=20)

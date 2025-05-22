@@ -8,29 +8,24 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph, Table, TableStyle
 from reportlab.lib import colors
 from functions.find_desktop import create_app_folder_on_desktop
+from .data_manager import PERSISTENT_DB_PATH, PERSISTENT_COUNTER_PATH
 import subprocess 
 
 # Percorso per il file contatore DDT (relativo alla posizione di questo script)
-DDT_COUNTER_FILE = os.path.join(os.path.dirname(__file__), '..', 'counter', 'ddt_counter.txt')
+DDT_COUNTER_FILE = PERSISTENT_COUNTER_PATH
 # Percorso per il database (relativo alla posizione di questo script)
-DATABASE_PATH_FOR_STAMPA_UTILS = os.path.join(os.path.dirname(__file__),'..','db','inventario.db')
+DATABASE_PATH_FOR_STAMPA_UTILS = PERSISTENT_DB_PATH # Usa il percorso persistente
 
 # --- Nuova gestione del percorso di output dei PDF ---
-# Nome della cartella che verrà creata sul Desktop dell'utente
 DDT_FOLDER_NAME = "DDT_AppInventario" 
 # Ottieni il percorso dinamico per la cartella di output dei PDF
 DDT_OUTPUT_PATH = create_app_folder_on_desktop(DDT_FOLDER_NAME)
 
-# Assicurati che la directory del counter esista
-os.makedirs(os.path.dirname(DDT_COUNTER_FILE), exist_ok=True)
-
 # Se DDT_OUTPUT_PATH è None (es. sistema operativo non riconosciuto o errore creazione),
-# gestisci l'errore. Potresti voler impostare un percorso di fallback qui.
+
 if DDT_OUTPUT_PATH is None:
     print("ERRORE: Impossibile determinare il percorso di output per i PDF. La generazione del DDT potrebbe fallire.")
-    # Esempio di fallback (potrebbe non essere desiderabile in produzione)
-    # DDT_OUTPUT_PATH = os.path.join(os.getcwd(), "temp_ddt_output")
-    # os.makedirs(DDT_OUTPUT_PATH, exist_ok=True)# --- Configurazione del Path ---
+    
 
 # --- Funzioni per il contatore DDT ---
 def get_current_ddt_number():
