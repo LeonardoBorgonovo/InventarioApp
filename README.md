@@ -102,20 +102,30 @@ Un'applicazione desktop semplice e intuitiva per la gestione del magazzino e la 
 
 ## Struttura del Progetto
 
-.
-├── main_app.py             # Punto di ingresso dell'applicazione
-├── functions/              # Contiene le funzioni logiche modulari
-│   ├── init.py
-│   ├── db_utils.py         # Funzioni per l'interazione con il database SQLite
-│   ├── ui_common_utils.py  # Funzioni utili per l'interfaccia utente (es. stampa_a_video)
-│   ├── ui_add_product.py   # Logica e UI per l'aggiunta di prodotti
-│   ├── ui_print_ddt.py     # Logica e UI per la generazione del DDT
-│   └── stampa_utils.py     # Funzioni per la generazione del PDF del DDT
-├── database/               # Cartella per il file del database SQLite (es. magazzino.db)
-├── output/                 # Cartella per i DDT generati
-│   └── ddt/
-└── README.md               # Questo file!
-
+```
+InventarioApp
+├── main
+|   ├── counter
+|   |   └── ddt_counter.txt
+|   ├── functions
+|   |   ├── manager
+|   |   |   └── data_manager.py
+|   |   ├── system
+|   |   |   └── find_desktop.py
+|   |   ├── ui
+|   |   |   ├── ui_add_product.py
+|   |   |   ├── ui_common_utils.py
+|   |   |   ├── ui_edit_delete_product.py
+|   |   |   ├── ui_print_ddt.py
+|   |   |   └── ui_view_product.py
+|   |   └── utils
+|   |       ├── db_utils.py
+|   |       └── stampa_utils.py
+|   ├── __init__.py
+|   └── inventario.py
+├── .gitignore
+└── README.md
+```
 
 ## Contributi
 
