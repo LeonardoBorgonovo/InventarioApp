@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
-from functions.db_utils import get_all_prodotti, search_prodotti # Importa search_prodotti
-from functions.ui_common_utils import create_toplevel_window
+from ..utils.db_utils import get_all_prodotti, search_prodotti # Importa search_prodotti
+from .ui_common_utils import create_toplevel_window
 
 def open_view_products_window(parent_root):
     """Apre una finestra per visualizzare tutti i prodotti in una tabella, con funzionalità di ricerca."""

@@ -1,7 +1,7 @@
 import tkinter as tk
-from tkinter import ttk, simpledialog, messagebox
-from functions.db_utils import get_all_prodotti, get_prodotto_by_codice, update_prodotto, delete_prodotto, get_prodotto_by_codice, search_prodotti # Importa search_prodotti
-from functions.ui_common_utils import stampa_a_video, create_toplevel_window
+from tkinter import ttk, messagebox
+from ..utils.db_utils import get_all_prodotti, get_prodotto_by_codice, update_prodotto, delete_prodotto, get_prodotto_by_codice, search_prodotti # Importa search_prodotti
+from .ui_common_utils import stampa_a_video, create_toplevel_window
 
 def open_edit_delete_product_window(parent_root):
     """Apre una finestra per modificare o eliminare prodotti, con funzionalità di ricerca."""

@@ -1,19 +1,17 @@
 import tkinter as tk
-from tkinter import messagebox
-import os
 import sys # Importa sys per la gestione dell'uscita in caso di errore
 
 
-from functions.db_utils import create_tables
+from functions.utils.db_utils import create_tables
 
 # Importa le funzioni di alto livello per la gestione dell'UI
-from functions.ui_add_product import open_add_product_window
-from functions.ui_view_product import open_view_products_window
-from functions.ui_edit_delete_product import open_edit_delete_product_window
-from functions.ui_print_ddt import open_print_ddt_window
+from functions.ui.ui_add_product import open_add_product_window
+from functions.ui.ui_view_product import open_view_products_window
+from functions.ui.ui_edit_delete_product import open_edit_delete_product_window
+from functions.ui.ui_print_ddt import open_print_ddt_window
 
 # Importa la funzione per inizializzare i file dati persistenti
-from functions.data_manager import initialize_data_files, PERSISTENT_DB_PATH, PERSISTENT_COUNTER_PATH
+from functions.manager.data_manager import initialize_data_files, PERSISTENT_DB_PATH, PERSISTENT_COUNTER_PATH
 
 
 try:
@@ -33,8 +31,6 @@ root.title("Inventario TECNOLUX")
 root.geometry("600x500") # Dimensioni iniziali per la finestra del menu
 
 # --- Inizializzazione Database (Creazione Tabelle) ---
-# Non è più necessario creare la directory 'db/' qui, perché i file saranno in PERSISTENT_DB_PATH
-# os.makedirs(DATABASE_DIR, exist_ok=True) # Rimuovi questa riga
 create_tables() # Questa funzione (da db_utils) DEVE ORA usare PERSISTENT_DB_PATH
 
 # --- Frame del Menu Principale ---

@@ -1,11 +1,10 @@
 import sqlite3
-import os
 import sys
 
 # Importa il percorso persistente del database dal modulo data_manager.
 # Questo è il percorso dove il database verrà effettivamente salvato e letto
 # sul sistema dell'utente, garantendo la persistenza dei dati.
-from .data_manager import PERSISTENT_DB_PATH
+from ..manager.data_manager import PERSISTENT_DB_PATH
 
 # Il percorso del database non deve più essere costruito qui,
 # ma deve usare la variabile PERSISTENT_DB_PATH importata.

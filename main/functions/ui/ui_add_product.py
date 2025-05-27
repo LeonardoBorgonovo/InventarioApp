@@ -1,7 +1,6 @@
 import tkinter as tk
-from tkinter import messagebox
-from functions.db_utils import insert_prodotto, get_prodotto_by_codice
-from functions.ui_common_utils import stampa_a_video, create_toplevel_window
+from ..utils.db_utils import insert_prodotto, get_prodotto_by_codice
+from .ui_common_utils import stampa_a_video, create_toplevel_window
 
 def open_add_product_window(parent_root):
     """Apre una finestra per aggiungere un nuovo prodotto."""

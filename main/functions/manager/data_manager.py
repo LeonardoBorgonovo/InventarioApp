@@ -1,5 +1,3 @@
-# InventarioApp/main/functions/data_manager.py
-
 import os
 import sys
 import shutil
@@ -30,10 +28,6 @@ def get_bundled_resource_path(relative_path_from_bundle_root):
     else:
         # Quando eseguiamo in modalità sviluppo, questo script è in
         # InventarioApp/main/functions/. Dobbiamo risalire a InventarioApp/
-        # __file__ -> InventarioApp/main/functions/data_manager.py
-        # os.path.dirname(__file__) -> InventarioApp/main/functions/
-        # os.path.dirname(os.path.dirname(__file__)) -> InventarioApp/main/
-        # os.path.dirname(os.path.dirname(os.path.dirname(__file__))) -> InventarioApp/
         project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         return os.path.join(project_root, relative_path_from_bundle_root)
 

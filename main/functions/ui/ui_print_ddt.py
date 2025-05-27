@@ -1,8 +1,8 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog
-from functions.db_utils import get_all_prodotti, search_prodotti
-from functions.ui_common_utils import create_toplevel_window, stampa_a_video
-from functions.stampa_utils import stampa_ddt_wrapper 
+from ..utils.db_utils import get_all_prodotti, search_prodotti
+from .ui_common_utils import create_toplevel_window, stampa_a_video
+from ..utils.stampa_utils import stampa_ddt_wrapper 
 
 def open_print_ddt_window(parent_root):
     """Apre una finestra per selezionare i materiali e generare il DDT."""

@@ -7,8 +7,8 @@ from reportlab.lib.units import cm, inch, mm # Possiamo usare diverse unità
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph, Table, TableStyle
 from reportlab.lib import colors
-from functions.find_desktop import create_app_folder_on_desktop
-from .data_manager import PERSISTENT_DB_PATH, PERSISTENT_COUNTER_PATH
+from ..system.find_desktop import create_app_folder_on_desktop
+from ..manager.data_manager import PERSISTENT_DB_PATH, PERSISTENT_COUNTER_PATH
 import subprocess 
 
 # Percorso per il file contatore DDT (relativo alla posizione di questo script)
